@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Command Runner</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; margin: 0; padding: 20px; }
+    #output { background: #000; padding: 10px; height: 400px; overflow-y: auto; border-radius: 5px; }
+    #commandInput { width: 100%; padding: 10px; background: #222; color: #eee; border: none; border-radius: 5px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Simple Web Terminal</h2>
+  <div id="output"></div>
+  <input id="commandInput" placeholder="Type a command and press Enter..." />
+
+  <script>
+    const input = document.getElementById("commandInput");
+    const outputDiv = document.getElementById("output");
+
+    input.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        const command = input.value;
+
+        if (command.trim() === "clear") {
+        outputDiv.innerHTML = "";
+          return;
+        }
+
+
+        input.value = "";
+
+        // Show the command
+        appendOutput(`$ ${command}`);
+
+        // Send to backend
+        const res = await fetch("http://localhost:3000/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command })
+        });
+
+        const data = await res.json();
+        appendOutput(data.output);
+      }
+    });
+
+    function appendOutput(text) {
+      const pre = document.createElement("pre");
+      pre.textContent = text;
+      outputDiv.appendChild(pre);
+      outputDiv.scrollTop = outputDiv.scrollHeight; // auto-scroll
+    }
+  </script>
+</body>
+</html>
